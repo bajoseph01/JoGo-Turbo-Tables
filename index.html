@@ -1447,49 +1447,21 @@
     const problem = state.currentQuestion
       ? `${state.currentQuestion.factorA} × ${state.currentQuestion.factorB} = ?`
       : 'Jo⚡Go Turbo Tables';
-    const progress = state.status === 'running'
-      ? state.currentQuestionIndex / TOTAL_QUESTIONS
-      : answeredCount() / TOTAL_QUESTIONS;
-    const raceNumber = state.status === 'running'
-      ? Math.min(state.currentQuestionIndex + 1, TOTAL_QUESTIONS)
-      : answeredCount();
 
-    const headerX = 44;
-    const headerY = 28;
-    const headerW = W - 88;
-    const headerH = 72;
-    const leftX = headerX + 26;
-    const rightW = 226;
-    const rightX = headerX + headerW - rightW - 26;
+    ctx.font = '900 42px Verdana';
+    const panelW = clamp(ctx.measureText(problem).width + 96, 320, 520);
+    const panelH = 76;
+    const panelX = W / 2 - panelW / 2;
+    const panelY = 28;
 
-    ctx.fillStyle = 'rgba(8,5,14,.58)';
-    roundRect(headerX, headerY, headerW, headerH, 8, true, false);
+    ctx.fillStyle = 'rgba(8,5,14,.72)';
+    roundRect(panelX, panelY, panelW, panelH, 8, true, false);
     ctx.strokeStyle = 'rgba(255,255,255,.14)';
     ctx.lineWidth = 1;
-    roundRect(headerX, headerY, headerW, headerH, 8, false, true);
+    roundRect(panelX, panelY, panelW, panelH, 8, false, true);
 
-    ctx.textAlign = 'left';
-    ctx.fillStyle = cssVar('--text-muted');
-    ctx.font = '900 13px Verdana';
-    ctx.fillText('ACCURACY b4 SPEED', leftX, headerY + 26);
-    ctx.fillStyle = cssVar('--good');
-    ctx.font = '900 19px Verdana';
-    ctx.fillText('Slow → Smooth → Fast', leftX, headerY + 52);
-
-    ctx.textAlign = 'center';
     ctx.fillStyle = cssVar('--text');
-    ctx.font = '900 36px Verdana';
-    ctx.fillText(problem, W / 2, headerY + 37);
-
-    ctx.textAlign = 'right';
-    ctx.fillStyle = cssVar('--text');
-    ctx.font = '900 16px Verdana';
-    ctx.fillText(`Race ${raceNumber} of ${TOTAL_QUESTIONS}`, headerX + headerW - 26, headerY + 26);
-
-    ctx.fillStyle = 'rgba(255,255,255,.16)';
-    roundRect(rightX, headerY + 42, rightW, 14, 7, true, false);
-    ctx.fillStyle = cssVar('--good');
-    roundRect(rightX, headerY + 42, rightW * progress, 14, 7, true, false);
+    ctx.fillText(problem, W / 2, panelY + panelH / 2 + 1);
   }
 
   function drawFlash() {
