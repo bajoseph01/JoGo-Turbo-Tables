@@ -63,8 +63,8 @@
 
     header {
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 18px;
+      grid-template-columns: 1fr;
+      gap: 10px;
       align-items: end;
     }
 
@@ -88,12 +88,12 @@
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      justify-content: flex-end;
+      justify-content: flex-start;
     }
 
     .tool-panel {
       display: grid;
-      grid-template-columns: repeat(4, minmax(150px, 1fr)) auto;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 10px;
       padding: 12px;
       border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
@@ -453,7 +453,11 @@
         <div class="tag">Accuracy b4 Speed!</div>
       </div>
       <div class="top-actions">
-        <button id="startBtn" type="button">Start Race</button>
+        <button id="startBtn" type="button">Start Calm Race</button>
+        <button id="slowerBtn" class="secondary" type="button">Slower</button>
+        <button id="pauseBtn" class="secondary" type="button">Pause</button>
+        <button id="lockBtn" class="secondary" type="button">Lock Answer</button>
+        <button id="fasterBtn" class="secondary" type="button">Faster</button>
         <button id="restartBtn" class="secondary" type="button">Restart Race</button>
       </div>
     </header>
@@ -478,8 +482,8 @@
       </label>
       <label for="speedSelect">Speed
         <select id="speedSelect">
-          <option value="chill">Chill</option>
-          <option value="cruise" selected>Cruise</option>
+          <option value="chill" selected>Chill</option>
+          <option value="cruise">Cruise</option>
           <option value="dash">Dash</option>
           <option value="turbo">Turbo</option>
         </select>
@@ -488,8 +492,12 @@
         <input id="adaptiveToggle" type="checkbox" checked />
         Adaptive Speed
       </label>
+      <label class="check-row" for="thinkTimeToggle">
+        <input id="thinkTimeToggle" type="checkbox" checked />
+        Think Time
+      </label>
       <button id="changeTableBtn" class="ghost" type="button">Change Table</button>
-      <button id="startBtnPanel" type="button">Start Race</button>
+      <button id="startBtnPanel" type="button">Start Calm Race</button>
     </section>
 
     <section class="game-shell" aria-label="Jo Go Turbo Tables racing game">
@@ -505,6 +513,7 @@
             <span>SMOOTH is FAST.</span>
             <span>FAST FACTS LAST.</span>
             <span>First we get it right. Then we get it fast.</span>
+            <span>You may pause. You may slow the road. You choose when ready.</span>
           </div>
           <table class="chart" aria-label="Classroom chart">
             <thead>
@@ -518,7 +527,7 @@
             </tbody>
           </table>
           <div class="screen-actions">
-            <button id="overlayStartBtn" type="button">Start Race</button>
+            <button id="overlayStartBtn" type="button">Start Calm Race</button>
             <button id="overlayPracticeBtn" class="secondary" type="button">Use Current Settings</button>
           </div>
         </div>
@@ -547,6 +556,20 @@
         </div>
       </div>
 
+      <div id="pauseOverlay" class="overlay" hidden>
+        <div class="screen">
+          <h2>Paused</h2>
+          <div class="mantra">
+            <span>Breathe. Check the fact. You are still in control.</span>
+            <strong>Slow is smooth. Smooth is fast.</strong>
+          </div>
+          <div class="screen-actions">
+            <button id="resumeBtn" type="button">Resume Race</button>
+            <button id="pauseRestartBtn" class="secondary" type="button">Restart Race</button>
+          </div>
+        </div>
+      </div>
+
       <div class="hud">
         <div>Question<strong id="questionText">0/20</strong></div>
         <div>Problem<strong id="problemText">Ready</strong></div>
@@ -560,8 +583,8 @@
     </section>
 
     <div class="below-game">
-      <div>Move: <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd>. Touch/click the left, middle, or right third of the road to choose a lane.</div>
-      <div>Race the road. Beat the facts. Build the brain.</div>
+      <div>Move: <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd>. Lock in: <kbd>Space</kbd> or <kbd>Enter</kbd>. Pause: <kbd>P</kbd>.</div>
+      <div>You control the road. Accuracy first.</div>
     </div>
   </main>
 
@@ -573,12 +596,14 @@
 
   // Speed settings are intentionally simple so a teacher can ask AI to edit them later.
   const SPEED_SETTINGS = {
-    chill: { label: 'Chill', base: 1.75, min: 1.35, max: 2.45 },
-    cruise: { label: 'Cruise', base: 2.45, min: 1.55, max: 3.25 },
-    dash: { label: 'Dash', base: 3.25, min: 1.85, max: 4.05 },
-    turbo: { label: 'Turbo', base: 4.05, min: 2.1, max: 4.65 }
+    chill: { label: 'Chill', base: 1.05, min: 0.75, max: 1.75 },
+    cruise: { label: 'Cruise', base: 1.75, min: 1.05, max: 2.55 },
+    dash: { label: 'Dash', base: 2.55, min: 1.55, max: 3.35 },
+    turbo: { label: 'Turbo', base: 3.35, min: 2.15, max: 4.15 }
   };
-  const ADAPTIVE_STEP = 0.22;
+  const ADAPTIVE_STEP = 0.16;
+  const MANUAL_SPEED_STEP = 0.25;
+  const THINK_ZONE_OFFSET = 118;
 
   const correctMessages = [
     'Smooth recall!',
@@ -588,11 +613,11 @@
     'Turbo brain warming up!'
   ];
   const wrongMessages = [
-    'Slow down. Smooth is fast.',
+    'Take a breath. Smooth is fast.',
     'Accuracy first.',
     'Lock that fact in.',
     'Try the fact again soon.',
-    'Calm recall beats guessing.'
+    'Calm recall grows with practice.'
   ];
   const progressMessages = {
     5: 'Engine warm-up complete. Keep it smooth.',
@@ -674,6 +699,7 @@
   const W = canvas.width;
   const H = canvas.height;
   const playerY = H - 88;
+  const THINK_ZONE_Y = playerY - THINK_ZONE_OFFSET;
   const topY = 96;
   const bottomY = H;
   const topRoadWidth = 330;
@@ -682,8 +708,11 @@
   const tableSelect = document.getElementById('tableSelect');
   const speedSelect = document.getElementById('speedSelect');
   const adaptiveToggle = document.getElementById('adaptiveToggle');
+  const thinkTimeToggle = document.getElementById('thinkTimeToggle');
   const startOverlay = document.getElementById('startOverlay');
   const endOverlay = document.getElementById('endOverlay');
+  const pauseOverlay = document.getElementById('pauseOverlay');
+  const pauseBtn = document.getElementById('pauseBtn');
 
   const hud = {
     question: document.getElementById('questionText'),
@@ -720,10 +749,14 @@
       options: [],
       flash: null,
       flashTimer: 0,
-      speed: SPEED_SETTINGS.cruise.base,
-      baseSpeed: SPEED_SETTINGS.cruise.base,
-      modeKey: 'cruise',
+      speed: SPEED_SETTINGS.chill.base,
+      baseSpeed: SPEED_SETTINGS.chill.base,
+      modeKey: 'chill',
       adaptive: true,
+      thinkTime: true,
+      waitingForAnswer: false,
+      pausedAt: 0,
+      pausedMs: 0,
       progressMessage: 'First we get it right. Then we get it fast.',
       progressTimer: 240
     };
@@ -857,11 +890,14 @@
       speed: speed.base,
       baseSpeed: speed.base,
       modeKey: mode,
-      adaptive: adaptiveToggle.checked
+      adaptive: adaptiveToggle.checked,
+      thinkTime: thinkTimeToggle.checked
     };
     setCurrentQuestion();
     startOverlay.hidden = true;
     endOverlay.hidden = true;
+    pauseOverlay.hidden = true;
+    pauseBtn.textContent = 'Pause';
     updateHud();
   }
 
@@ -874,6 +910,8 @@
     state.flash = null;
     startOverlay.hidden = false;
     endOverlay.hidden = true;
+    pauseOverlay.hidden = true;
+    pauseBtn.textContent = 'Pause';
     updateHud();
   }
 
@@ -882,6 +920,7 @@
     state.options = makeGateOptions(state.currentQuestion);
     state.gateY = -105;
     state.lane = 1;
+    state.waitingForAnswer = false;
   }
 
   function answeredCount() {
@@ -916,7 +955,8 @@
   }
 
   function chooseCurrentLane() {
-    if (state.status !== 'running' || !state.currentQuestion) return;
+    if (!['running', 'paused'].includes(state.status) || !state.currentQuestion) return;
+    if (state.status === 'paused') return;
 
     const fact = state.currentQuestion;
     const selected = state.options[state.lane];
@@ -977,13 +1017,16 @@
     state.status = 'ended';
     state.endTime = performance.now();
     state.currentQuestion = null;
+    state.waitingForAnswer = false;
+    pauseBtn.textContent = 'Pause';
     endOverlay.hidden = false;
     renderEndScreen();
   }
 
   function totalTimeSeconds() {
     const end = state.status === 'ended' ? state.endTime : performance.now();
-    return state.startTime ? (end - state.startTime) / 1000 : 0;
+    const activePause = state.status === 'paused' && state.pausedAt ? performance.now() - state.pausedAt : 0;
+    return state.startTime ? Math.max(0, (end - state.startTime - state.pausedMs - activePause) / 1000) : 0;
   }
 
   function averageSecondsPerQuestion() {
@@ -1003,7 +1046,7 @@
     if (rating === 'Master') return ['MASTER RUN!', 'You were fast because you were accurate.', 'Fast facts last.'];
     if (rating === 'Gold') return ['GOLD RUN!', 'Strong recall. Keep sharpening your facts.'];
     if (rating === 'Silver') return ['SILVER RUN!', 'Good effort. Practise the missed facts and race again.'];
-    return ['BRONZE RUN!', 'Slow down first. Accuracy builds speed.', 'Smooth is fast.'];
+    return ['PRACTICE RUN!', 'This is information, not failure.', 'Use Think Time and build the facts calmly.'];
   }
 
   function uniqueMissedFacts() {
@@ -1057,8 +1100,45 @@
     hud.accuracy.textContent = `${accuracyPercent()}%`;
     hud.streak.textContent = state.currentStreak;
     hud.best.textContent = state.bestStreak;
-    hud.speed.textContent = `${SPEED_SETTINGS[state.modeKey].label} ${state.adaptive ? 'Adaptive' : ''}`.trim();
+    hud.speed.textContent = [
+      SPEED_SETTINGS[state.modeKey].label,
+      state.thinkTime ? 'Wait' : '',
+      state.adaptive ? 'Auto' : ''
+    ].filter(Boolean).join(' · ');
     hud.time.textContent = `${totalTimeSeconds().toFixed(1)}s`;
+  }
+
+  function togglePause() {
+    if (state.status === 'running') {
+      state.status = 'paused';
+      state.pausedAt = performance.now();
+      pauseOverlay.hidden = false;
+      pauseBtn.textContent = 'Resume';
+      updateHud();
+      return;
+    }
+
+    if (state.status === 'paused') {
+      state.pausedMs += performance.now() - state.pausedAt;
+      state.pausedAt = 0;
+      state.status = 'running';
+      pauseOverlay.hidden = true;
+      pauseBtn.textContent = 'Pause';
+      updateHud();
+    }
+  }
+
+  function nudgeSpeed(direction) {
+    if (!['running', 'paused'].includes(state.status)) return;
+    const bounds = SPEED_SETTINGS[state.modeKey];
+    state.speed = clamp(state.speed + direction * MANUAL_SPEED_STEP, bounds.min, bounds.max);
+    state.progressMessage = direction < 0 ? 'Road slowed. Take your time.' : 'Road a little faster. Stay smooth.';
+    state.progressTimer = 150;
+    updateHud();
+  }
+
+  function lockAnswer() {
+    if (state.status === 'running') chooseCurrentLane();
   }
 
   function laneXAtY(lane, y) {
@@ -1179,6 +1259,16 @@
       ctx.textBaseline = 'middle';
       ctx.fillText(state.options[lane], x, y + 2);
     }
+
+    if (state.waitingForAnswer) {
+      ctx.fillStyle = 'rgba(0,0,0,.48)';
+      roundRect(250, y + 48, 500, 42, 8, true, false);
+      ctx.fillStyle = cssVar('--text');
+      ctx.font = '900 18px Verdana';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Move lanes, then lock your answer when ready.', W / 2, y + 70);
+    }
   }
 
   function drawPlayer() {
@@ -1275,7 +1365,7 @@
   }
 
   function drawProgressMessage() {
-    if (!state.progressMessage || state.progressTimer <= 0 || state.flashTimer > 0) return;
+    if (!state.progressMessage || state.progressTimer <= 0 || state.flashTimer > 0 || state.waitingForAnswer) return;
     ctx.fillStyle = 'rgba(0,0,0,.46)';
     roundRect(150, H - 162, W - 300, 52, 8, true, false);
     ctx.fillStyle = cssVar('--text');
@@ -1286,14 +1376,14 @@
   }
 
   function drawIdleMessage() {
-    if (state.status === 'running') return;
+    if (state.status === 'running' || state.status === 'paused') return;
     ctx.fillStyle = 'rgba(0,0,0,.24)';
     roundRect(242, 116, 516, 70, 8, true, false);
     ctx.fillStyle = cssVar('--text');
     ctx.font = '900 23px Verdana';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    wrapText('Race the road. Beat the facts. Build the brain.', W / 2, 153, 470, 28);
+    wrapText('The road can wait. Choose when your brain is ready.', W / 2, 153, 470, 28);
   }
 
   function drawFrame() {
@@ -1312,9 +1402,17 @@
     drawFrame();
 
     if (state.status === 'running') {
-      state.roadOffset += state.speed;
-      state.gateY += state.speed;
-      if (state.gateY > playerY + 10) chooseCurrentLane();
+      const roadSpeed = state.waitingForAnswer ? 0.18 : state.speed;
+      state.roadOffset += roadSpeed;
+      if (state.thinkTime && state.gateY >= THINK_ZONE_Y) {
+        state.gateY = THINK_ZONE_Y;
+        state.waitingForAnswer = true;
+        state.progressMessage = 'Choose when ready. Space or Enter locks it in.';
+        state.progressTimer = 60;
+      } else {
+        state.gateY += state.speed;
+      }
+      if (!state.thinkTime && state.gateY > playerY + 10) chooseCurrentLane();
       updateHud();
     } else if (state.status === 'start') {
       state.roadOffset += 1.05;
@@ -1331,10 +1429,15 @@
   }
 
   document.addEventListener('keydown', event => {
-    if (['ArrowLeft', 'ArrowRight', ' ', 'Spacebar'].includes(event.key)) event.preventDefault();
+    if (['ArrowLeft', 'ArrowRight', ' ', 'Spacebar', 'Enter'].includes(event.key)) event.preventDefault();
     if (event.key === 'ArrowLeft' || event.key === 'a' || event.key === 'A') moveLane(-1);
     if (event.key === 'ArrowRight' || event.key === 'd' || event.key === 'D') moveLane(1);
-    if (event.key === 'Enter' && state.status !== 'running') startRace();
+    if (event.key === 'p' || event.key === 'P') togglePause();
+    if (event.key === '-' || event.key === '_') nudgeSpeed(-1);
+    if (event.key === '+' || event.key === '=') nudgeSpeed(1);
+    if ((event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') && state.status === 'running') lockAnswer();
+    else if (event.key === 'Enter' && state.status === 'paused') togglePause();
+    else if (event.key === 'Enter' && state.status !== 'running') startRace();
   });
 
   canvas.addEventListener('pointerdown', event => {
@@ -1342,6 +1445,7 @@
     const x = event.clientX - rect.left;
     const third = rect.width / 3;
     state.lane = x < third ? 0 : x < third * 2 ? 1 : 2;
+    if (state.waitingForAnswer) lockAnswer();
   });
 
   speedSelect.addEventListener('change', () => {
@@ -1358,11 +1462,24 @@
     updateHud();
   });
 
+  thinkTimeToggle.addEventListener('change', () => {
+    state.thinkTime = thinkTimeToggle.checked;
+    state.progressMessage = state.thinkTime ? 'Think Time on. The gate will wait.' : 'Race mode on. The gate keeps moving.';
+    state.progressTimer = 150;
+    updateHud();
+  });
+
   document.getElementById('startBtn').addEventListener('click', startRace);
   document.getElementById('startBtnPanel').addEventListener('click', startRace);
   document.getElementById('overlayStartBtn').addEventListener('click', startRace);
   document.getElementById('overlayPracticeBtn').addEventListener('click', startRace);
   document.getElementById('restartBtn').addEventListener('click', restartRace);
+  document.getElementById('pauseRestartBtn').addEventListener('click', restartRace);
+  document.getElementById('resumeBtn').addEventListener('click', togglePause);
+  pauseBtn.addEventListener('click', togglePause);
+  document.getElementById('slowerBtn').addEventListener('click', () => nudgeSpeed(-1));
+  document.getElementById('fasterBtn').addEventListener('click', () => nudgeSpeed(1));
+  document.getElementById('lockBtn').addEventListener('click', lockAnswer);
   document.getElementById('raceAgainBtn').addEventListener('click', restartRace);
   document.getElementById('changeTableBtn').addEventListener('click', showStartScreen);
   document.getElementById('endChangeTableBtn').addEventListener('click', showStartScreen);

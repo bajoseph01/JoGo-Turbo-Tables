@@ -17,3 +17,6 @@ Open `JoGo_Turbo_Tables.html` in any browser.
 - Uses vanilla HTML, CSS, JavaScript, and canvas.
 - No external libraries, accounts, databases, servers, or frameworks.
 - Built from the Dividend Dash racing-gate prototype structure, converted to multiplication facts from 1x1 to 12x12.
+- Default play is calmer now: Chill speed, Think Time on, adaptive speed on.
+- Learners can pause, slow the road, speed it up, and lock an answer with Space or Enter.
+- Think Time mode stops the gates in a safe decision zone so learners can choose when ready instead of being forced into panic guessing.
