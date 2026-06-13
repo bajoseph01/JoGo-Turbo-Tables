@@ -10,10 +10,13 @@ GitHub Pages URL, once Pages is enabled:
 
 `https://bajoseph01.github.io/JoGo-Turbo-Tables/`
 
+Current deployment note: the app is prepared for GitHub Pages, but Pages could not be enabled while the repo is private on the current GitHub plan. See `DEPLOYMENT.md`.
+
 ## Project Contents
 
 - `index.html` - the playable game and GitHub Pages entrypoint.
 - `manifest.webmanifest` - iPad/Home Screen web-app metadata.
+- `DEPLOYMENT.md` - GitHub Pages and iPad deployment notes.
 - `assets/icons/` - local icons for Home Screen/PWA use.
 - `screenshots/` - desktop and mobile visual QA screenshots.
 
