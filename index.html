@@ -145,26 +145,26 @@
       transition: padding .2s ease;
     }
 
-    .control-dock:focus-within .dock-panel,
+    .control-dock:not(.playing):focus-within .dock-panel,
     .control-dock.open .dock-panel {
       grid-template-rows: 1fr;
       opacity: 1;
       pointer-events: auto;
     }
 
-    .control-dock:focus-within .dock-inner,
+    .control-dock:not(.playing):focus-within .dock-inner,
     .control-dock.open .dock-inner {
       padding: 12px;
     }
 
     @media (hover: hover) and (pointer: fine) {
-      .control-dock:hover .dock-panel {
+      .control-dock:not(.playing):hover .dock-panel {
         grid-template-rows: 1fr;
         opacity: 1;
         pointer-events: auto;
       }
 
-      .control-dock:hover .dock-inner {
+      .control-dock:not(.playing):hover .dock-inner {
         padding: 12px;
       }
     }
@@ -1011,6 +1011,7 @@
     pauseOverlay.hidden = true;
     pauseBtn.textContent = 'Pause';
     setControlsOpen(false);
+    setControlsPlaying(true);
     gameShell.focus({ preventScroll: true });
     updateHud();
   }
@@ -1026,6 +1027,7 @@
     endOverlay.hidden = true;
     pauseOverlay.hidden = true;
     pauseBtn.textContent = 'Pause';
+    setControlsPlaying(false);
     setControlsOpen(true);
     updateHud();
   }
@@ -1033,6 +1035,10 @@
   function setControlsOpen(open) {
     controlDock.classList.toggle('open', open);
     controlsToggle.setAttribute('aria-expanded', String(open));
+  }
+
+  function setControlsPlaying(playing) {
+    controlDock.classList.toggle('playing', playing);
   }
 
   function toggleControls() {
@@ -1143,6 +1149,7 @@
     state.currentQuestion = null;
     state.waitingForAnswer = false;
     pauseBtn.textContent = 'Pause';
+    setControlsPlaying(false);
     endOverlay.hidden = false;
     renderEndScreen();
   }
@@ -1433,41 +1440,56 @@
     ctx.restore();
   }
 
-  function drawPrompt() {
+  function drawRaceHeader() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
     const problem = state.currentQuestion
       ? `${state.currentQuestion.factorA} × ${state.currentQuestion.factorB} = ?`
       : 'Jo⚡Go Turbo Tables';
+    const progress = state.status === 'running'
+      ? state.currentQuestionIndex / TOTAL_QUESTIONS
+      : answeredCount() / TOTAL_QUESTIONS;
+    const raceNumber = state.status === 'running'
+      ? Math.min(state.currentQuestionIndex + 1, TOTAL_QUESTIONS)
+      : answeredCount();
 
-    ctx.fillStyle = 'rgba(0,0,0,.36)';
-    roundRect(W / 2 - 300, 20, 600, 64, 8, true, false);
-    ctx.fillStyle = cssVar('--text');
-    ctx.font = '900 34px Verdana';
-    wrapText(problem, W / 2, 54, 560, 38);
-  }
+    const headerX = 44;
+    const headerY = 28;
+    const headerW = W - 88;
+    const headerH = 72;
+    const leftX = headerX + 26;
+    const rightW = 226;
+    const rightX = headerX + headerW - rightW - 26;
 
-  function drawStatus() {
-    ctx.fillStyle = 'rgba(0,0,0,.34)';
-    roundRect(18, 18, 254, 72, 8, true, false);
-    ctx.fillStyle = cssVar('--text-muted');
-    ctx.font = '900 15px Verdana';
+    ctx.fillStyle = 'rgba(8,5,14,.58)';
+    roundRect(headerX, headerY, headerW, headerH, 8, true, false);
+    ctx.strokeStyle = 'rgba(255,255,255,.14)';
+    ctx.lineWidth = 1;
+    roundRect(headerX, headerY, headerW, headerH, 8, false, true);
+
     ctx.textAlign = 'left';
-    ctx.fillText('ACCURACY b4 SPEED', 34, 44);
+    ctx.fillStyle = cssVar('--text-muted');
+    ctx.font = '900 13px Verdana';
+    ctx.fillText('ACCURACY b4 SPEED', leftX, headerY + 26);
     ctx.fillStyle = cssVar('--good');
-    ctx.font = '900 20px Verdana';
-    ctx.fillText('Slow → Smooth → Fast', 34, 71);
+    ctx.font = '900 19px Verdana';
+    ctx.fillText('Slow → Smooth → Fast', leftX, headerY + 52);
 
-    const progress = state.status === 'running' ? state.currentQuestionIndex / TOTAL_QUESTIONS : answeredCount() / TOTAL_QUESTIONS;
-    ctx.fillStyle = 'rgba(255,255,255,.14)';
-    roundRect(W - 282, 30, 248, 18, 8, true, false);
-    ctx.fillStyle = cssVar('--good');
-    roundRect(W - 282, 30, 248 * progress, 18, 8, true, false);
+    ctx.textAlign = 'center';
     ctx.fillStyle = cssVar('--text');
-    ctx.font = '900 15px Verdana';
+    ctx.font = '900 36px Verdana';
+    ctx.fillText(problem, W / 2, headerY + 37);
+
     ctx.textAlign = 'right';
-    ctx.fillText(`Race ${Math.min(state.currentQuestionIndex + 1, TOTAL_QUESTIONS)} of ${TOTAL_QUESTIONS}`, W - 34, 70);
+    ctx.fillStyle = cssVar('--text');
+    ctx.font = '900 16px Verdana';
+    ctx.fillText(`Race ${raceNumber} of ${TOTAL_QUESTIONS}`, headerX + headerW - 26, headerY + 26);
+
+    ctx.fillStyle = 'rgba(255,255,255,.16)';
+    roundRect(rightX, headerY + 42, rightW, 14, 7, true, false);
+    ctx.fillStyle = cssVar('--good');
+    roundRect(rightX, headerY + 42, rightW * progress, 14, 7, true, false);
   }
 
   function drawFlash() {
@@ -1515,8 +1537,7 @@
     drawRoad();
     drawGate();
     drawPlayer();
-    drawPrompt();
-    drawStatus();
+    drawRaceHeader();
     drawFlash();
     drawProgressMessage();
     drawIdleMessage();
