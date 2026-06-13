@@ -29,3 +29,4 @@ Current deployment note: the app is prepared for GitHub Pages, but Pages could n
 - Default play is calmer now: Chill speed, Think Time on, adaptive speed on.
 - Learners can pause, slow the road, speed it up, and lock an answer with Space or Enter.
 - Think Time mode stops the gates in a safe decision zone so learners can choose when ready instead of being forced into panic guessing.
+- Controls use progressive disclosure: settings stay in a tap/hover drawer so the learner's working memory stays focused on the multiplication fact.

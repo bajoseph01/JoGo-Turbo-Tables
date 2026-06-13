@@ -99,15 +99,84 @@
       justify-content: flex-start;
     }
 
+    .control-dock {
+      position: relative;
+      z-index: 5;
+      border: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--surface) 76%, transparent);
+    }
+
+    .dock-tab {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 50px;
+      border: 0;
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--surface-2) 64%, transparent);
+      color: var(--text);
+      box-shadow: none;
+      text-align: left;
+    }
+
+    .dock-tab::after {
+      content: "tap to open";
+      color: var(--text-muted);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+    }
+
+    .dock-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      pointer-events: none;
+      transition: grid-template-rows .2s ease, opacity .2s ease;
+    }
+
+    .dock-inner {
+      min-height: 0;
+      overflow: hidden;
+      display: grid;
+      gap: 10px;
+      padding: 0 12px;
+      transition: padding .2s ease;
+    }
+
+    .control-dock:focus-within .dock-panel,
+    .control-dock.open .dock-panel {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .control-dock:focus-within .dock-inner,
+    .control-dock.open .dock-inner {
+      padding: 12px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .control-dock:hover .dock-panel {
+        grid-template-rows: 1fr;
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .control-dock:hover .dock-inner {
+        padding: 12px;
+      }
+    }
+
     .tool-panel {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 10px;
-      padding: 12px;
       border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
       border-radius: 8px;
       background: color-mix(in srgb, var(--surface) 88%, transparent);
-      box-shadow: 0 18px 44px rgba(0, 0, 0, .34);
+      padding: 10px;
     }
 
     label {
@@ -199,12 +268,33 @@
     }
 
     .hud {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
       display: grid;
       grid-template-columns: repeat(8, minmax(0, 1fr));
       gap: 8px;
       padding: 10px;
       background: color-mix(in srgb, var(--ink) 48%, var(--surface));
       border-top: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
+      border: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
+      border-radius: 8px;
+      opacity: .16;
+      transform: translateY(calc(100% - 18px));
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .game-shell.show-hud .hud {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .game-shell:hover .hud {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .hud div {
@@ -421,8 +511,11 @@
         padding: 10px;
       }
 
-      .hud,
       .results-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hud {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
@@ -460,6 +553,12 @@
         <h1>Jo⚡Go Turbo Tables</h1>
         <div class="tag">Accuracy b4 Speed!</div>
       </div>
+    </header>
+
+    <section class="control-dock" id="controlDock" aria-label="Game controls drawer">
+      <button id="controlsToggle" class="dock-tab" type="button" aria-expanded="false" aria-controls="controlPanel">Controls and Settings</button>
+      <div id="controlPanel" class="dock-panel">
+        <div class="dock-inner">
       <div class="top-actions">
         <button id="startBtn" type="button">Start Calm Race</button>
         <button id="slowerBtn" class="secondary" type="button">Slower</button>
@@ -468,7 +567,6 @@
         <button id="fasterBtn" class="secondary" type="button">Faster</button>
         <button id="restartBtn" class="secondary" type="button">Restart Race</button>
       </div>
-    </header>
 
     <section class="tool-panel" aria-label="Race setup controls">
       <label for="tableSelect">Focus Table
@@ -507,8 +605,11 @@
       <button id="changeTableBtn" class="ghost" type="button">Change Table</button>
       <button id="startBtnPanel" type="button">Start Calm Race</button>
     </section>
+        </div>
+      </div>
+    </section>
 
-    <section class="game-shell" aria-label="Jo Go Turbo Tables racing game">
+    <section class="game-shell" id="gameShell" tabindex="0" aria-label="Jo Go Turbo Tables racing game">
       <canvas id="game" width="1000" height="600" aria-label="Three-lane multiplication gate racing game"></canvas>
 
       <div id="startOverlay" class="overlay">
@@ -721,6 +822,9 @@
   const endOverlay = document.getElementById('endOverlay');
   const pauseOverlay = document.getElementById('pauseOverlay');
   const pauseBtn = document.getElementById('pauseBtn');
+  const controlDock = document.getElementById('controlDock');
+  const controlsToggle = document.getElementById('controlsToggle');
+  const gameShell = document.getElementById('gameShell');
 
   const hud = {
     question: document.getElementById('questionText'),
@@ -906,6 +1010,8 @@
     endOverlay.hidden = true;
     pauseOverlay.hidden = true;
     pauseBtn.textContent = 'Pause';
+    setControlsOpen(false);
+    gameShell.focus({ preventScroll: true });
     updateHud();
   }
 
@@ -920,7 +1026,17 @@
     endOverlay.hidden = true;
     pauseOverlay.hidden = true;
     pauseBtn.textContent = 'Pause';
+    setControlsOpen(true);
     updateHud();
+  }
+
+  function setControlsOpen(open) {
+    controlDock.classList.toggle('open', open);
+    controlsToggle.setAttribute('aria-expanded', String(open));
+  }
+
+  function toggleControls() {
+    setControlsOpen(!controlDock.classList.contains('open'));
   }
 
   function setCurrentQuestion() {
@@ -1491,6 +1607,7 @@
   document.getElementById('raceAgainBtn').addEventListener('click', restartRace);
   document.getElementById('changeTableBtn').addEventListener('click', showStartScreen);
   document.getElementById('endChangeTableBtn').addEventListener('click', showStartScreen);
+  controlsToggle.addEventListener('click', toggleControls);
   document.getElementById('pal-toggle').addEventListener('click', nextPalette);
   document.getElementById('pal-toggle').addEventListener('keydown', event => {
     if (event.key === 'Enter' || event.key === ' ') {
