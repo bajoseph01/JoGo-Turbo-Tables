@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jo⚡Go Turbo Tables</title>
+  <style>
+    :root {
+      --bg: #1E0925;
+      --surface: #2B0D34;
+      --surface-2: #3A104B;
+      --text: #F2EFF3;
+      --text-muted: #CDB8D7;
+      --accent: #E4A83C;
+      --accent-2: #5EB5F2;
+      --good: #7AF190;
+      --bad: #FB7156;
+      --road: #271B3E;
+      --road-line: #5EB5F2;
+      --panel-glow: #F665E1;
+      --border: #8B6298;
+      --ink: #0E0E0F;
+      --button-text: #1E0925;
+      --font-display: Georgia, "Times New Roman", serif;
+      --font-body: Verdana, Geneva, sans-serif;
+      --text-xs: 15px;
+      --text-sm: 18px;
+      --text-base: 22px;
+      --text-card: 20px;
+      --text-sub: 20px;
+      --text-h3: 28px;
+      --text-h2: 38px;
+      --text-h1: clamp(44px, 5vw, 68px);
+      --leading-tight: 1.25;
+      --leading-normal: 1.55;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { font-size: 22px; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: var(--leading-normal);
+      background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--surface-2) 74%, transparent), transparent 52%),
+        linear-gradient(180deg, var(--bg), var(--ink));
+      display: flex;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .wrap {
+      width: min(1180px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: end;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: var(--text-h1);
+      line-height: 1;
+      margin: 0;
+      color: var(--accent);
+      letter-spacing: 0;
+    }
+
+    .tag {
+      color: var(--text-muted);
+      font-size: var(--text-sub);
+      margin-top: 6px;
+      font-weight: 700;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .tool-panel {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr)) auto;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--surface) 88%, transparent);
+      box-shadow: 0 18px 44px rgba(0, 0, 0, .34);
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      color: var(--text-muted);
+      font-size: var(--text-xs);
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    select,
+    button {
+      min-height: 46px;
+      border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+      border-radius: 8px;
+      font: 900 var(--text-sm) var(--font-body);
+    }
+
+    select {
+      width: 100%;
+      color: var(--text);
+      background: var(--surface-2);
+      padding: 8px 34px 8px 10px;
+    }
+
+    .check-row {
+      min-height: 46px;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      text-transform: none;
+      font-size: var(--text-sm);
+      background: color-mix(in srgb, var(--surface-2) 74%, transparent);
+      border: 1px solid color-mix(in srgb, var(--border) 64%, transparent);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+
+    input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      accent-color: var(--accent);
+    }
+
+    button {
+      color: var(--button-text);
+      background: var(--accent);
+      padding: 8px 14px;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .28);
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    button.ghost {
+      color: var(--text);
+      background: color-mix(in srgb, var(--surface-2) 54%, transparent);
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      outline: 3px solid var(--accent-2);
+      outline-offset: 2px;
+    }
+
+    .game-shell {
+      position: relative;
+      border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+      border-radius: 8px;
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--surface), var(--bg));
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .42);
+    }
+
+    #game {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1000 / 600;
+      background: var(--ink);
+      touch-action: none;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px;
+      background: color-mix(in srgb, var(--ink) 48%, var(--surface));
+      border-top: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
+    }
+
+    .hud div {
+      min-height: 74px;
+      color: var(--text-muted);
+      background: color-mix(in srgb, var(--surface-2) 58%, transparent);
+      border: 1px solid color-mix(in srgb, var(--border) 44%, transparent);
+      border-radius: 8px;
+      padding: 7px 9px;
+      font-size: var(--text-xs);
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .hud strong {
+      display: block;
+      color: var(--text);
+      font-size: var(--text-sm);
+      line-height: 1.2;
+      margin-top: 5px;
+      text-transform: none;
+      overflow-wrap: anywhere;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 12;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow: auto;
+      background:
+        radial-gradient(circle at 50% 10%, color-mix(in srgb, var(--surface-2) 76%, transparent), transparent 52%),
+        color-mix(in srgb, var(--ink) 72%, transparent);
+      backdrop-filter: blur(3px);
+    }
+
+    .overlay[hidden] { display: none; }
+
+    .screen {
+      width: min(920px, 100%);
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      display: grid;
+      gap: 16px;
+      border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+      border-radius: 8px;
+      padding: 22px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      box-shadow: 0 22px 60px rgba(0, 0, 0, .46);
+    }
+
+    .screen h2 {
+      font-family: var(--font-display);
+      font-size: var(--text-h2);
+      line-height: var(--leading-tight);
+      margin: 0;
+      color: var(--accent);
+      letter-spacing: 0;
+    }
+
+    .mantra {
+      font-size: var(--text-card);
+      color: var(--text);
+      line-height: 1.45;
+      display: grid;
+      gap: 4px;
+    }
+
+    .mantra strong { color: var(--good); }
+
+    .chart {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--text-sm);
+      overflow: hidden;
+      border-radius: 8px;
+    }
+
+    .chart th,
+    .chart td {
+      text-align: left;
+      padding: 8px 10px;
+      border: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
+      background: color-mix(in srgb, var(--surface-2) 66%, transparent);
+    }
+
+    .chart th {
+      color: var(--accent);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .result-tile {
+      min-height: 86px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
+      background: color-mix(in srgb, var(--surface-2) 68%, transparent);
+      color: var(--text-muted);
+      font-size: var(--text-xs);
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .result-tile strong {
+      display: block;
+      color: var(--text);
+      font-size: var(--text-card);
+      line-height: 1.2;
+      margin-top: 5px;
+      text-transform: none;
+    }
+
+    .missed-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .missed-list li {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--bad) 18%, var(--surface-2));
+      border: 1px solid color-mix(in srgb, var(--bad) 58%, transparent);
+      font-size: var(--text-sm);
+      font-weight: 900;
+    }
+
+    .screen-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .below-game {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--text-muted);
+      font-size: var(--text-xs);
+      font-weight: 800;
+    }
+
+    kbd {
+      display: inline-block;
+      min-width: 28px;
+      text-align: center;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
+      border-bottom-width: 3px;
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-size: var(--text-xs);
+    }
+
+    #pal-toggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+      border-radius: 999px;
+      padding: 6px 11px;
+      color: var(--text);
+      background: color-mix(in srgb, var(--ink) 62%, transparent);
+      backdrop-filter: blur(4px);
+      cursor: pointer;
+      user-select: none;
+      font: 900 var(--text-xs) var(--font-body);
+    }
+
+    #pal-toggle:focus-visible {
+      outline: 3px solid var(--accent-2);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 980px) {
+      header,
+      .tool-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .top-actions {
+        justify-content: flex-start;
+      }
+
+      .hud {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .overlay { align-items: flex-start; }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 10px;
+      }
+
+      .hud,
+      .results-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .screen {
+        padding: 14px;
+      }
+
+      #game {
+        height: 540px;
+      }
+
+      #pal-toggle {
+        top: auto;
+        bottom: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        justify-content: center;
+        padding: 0;
+      }
+
+      #pal-name { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="pal-toggle" role="button" tabindex="0" aria-label="Change colour palette">
+    <span aria-hidden="true">◆</span>
+    <span id="pal-name">Eye Candy</span>
+  </div>
+
+  <main class="wrap">
+    <header>
+      <div>
+        <h1>Jo⚡Go Turbo Tables</h1>
+        <div class="tag">Accuracy b4 Speed!</div>
+      </div>
+      <div class="top-actions">
+        <button id="startBtn" type="button">Start Race</button>
+        <button id="restartBtn" class="secondary" type="button">Restart Race</button>
+      </div>
+    </header>
+
+    <section class="tool-panel" aria-label="Race setup controls">
+      <label for="tableSelect">Focus Table
+        <select id="tableSelect">
+          <option value="mixed">Mixed</option>
+          <option value="1">×1</option>
+          <option value="2">×2</option>
+          <option value="3">×3</option>
+          <option value="4">×4</option>
+          <option value="5">×5</option>
+          <option value="6">×6</option>
+          <option value="7">×7</option>
+          <option value="8">×8</option>
+          <option value="9">×9</option>
+          <option value="10">×10</option>
+          <option value="11">×11</option>
+          <option value="12">×12</option>
+        </select>
+      </label>
+      <label for="speedSelect">Speed
+        <select id="speedSelect">
+          <option value="chill">Chill</option>
+          <option value="cruise" selected>Cruise</option>
+          <option value="dash">Dash</option>
+          <option value="turbo">Turbo</option>
+        </select>
+      </label>
+      <label class="check-row" for="adaptiveToggle">
+        <input id="adaptiveToggle" type="checkbox" checked />
+        Adaptive Speed
+      </label>
+      <button id="changeTableBtn" class="ghost" type="button">Change Table</button>
+      <button id="startBtnPanel" type="button">Start Race</button>
+    </section>
+
+    <section class="game-shell" aria-label="Jo Go Turbo Tables racing game">
+      <canvas id="game" width="1000" height="600" aria-label="Three-lane multiplication gate racing game"></canvas>
+
+      <div id="startOverlay" class="overlay">
+        <div class="screen">
+          <h2>JO⚡GO TURBO TABLES</h2>
+          <div class="mantra">
+            <span>Mr Jo says:</span>
+            <strong>ACCURACY b4 SPEED... makes you even FASTER, INDEED!</strong>
+            <span>SLOW is SMOOTH.</span>
+            <span>SMOOTH is FAST.</span>
+            <span>FAST FACTS LAST.</span>
+            <span>First we get it right. Then we get it fast.</span>
+          </div>
+          <table class="chart" aria-label="Classroom chart">
+            <thead>
+              <tr><th>Word</th><th>Meaning in the game</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Slow</td><td>Think clearly</td></tr>
+              <tr><td>Smooth</td><td>Retrieve accurately</td></tr>
+              <tr><td>Fast</td><td>Recall automatically</td></tr>
+              <tr><td>Last</td><td>Facts stick in memory</td></tr>
+            </tbody>
+          </table>
+          <div class="screen-actions">
+            <button id="overlayStartBtn" type="button">Start Race</button>
+            <button id="overlayPracticeBtn" class="secondary" type="button">Use Current Settings</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="endOverlay" class="overlay" hidden>
+        <div class="screen">
+          <h2 id="ratingTitle">Race Complete</h2>
+          <div id="ratingMessage" class="mantra"></div>
+          <div class="results-grid">
+            <div class="result-tile">Final score<strong id="finalScore">0</strong></div>
+            <div class="result-tile">Correct<strong id="finalCorrect">0 / 20</strong></div>
+            <div class="result-tile">Accuracy<strong id="finalAccuracy">0%</strong></div>
+            <div class="result-tile">Total time<strong id="finalTime">0.0s</strong></div>
+            <div class="result-tile">Avg / question<strong id="finalAverage">0.0s</strong></div>
+            <div class="result-tile">Best streak<strong id="finalBestStreak">0</strong></div>
+          </div>
+          <div>
+            <h3 id="missedHeading">Facts to practise:</h3>
+            <ul id="missedFacts" class="missed-list"></ul>
+          </div>
+          <div class="screen-actions">
+            <button id="raceAgainBtn" type="button">Race Again</button>
+            <button id="endChangeTableBtn" class="secondary" type="button">Change Table</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud">
+        <div>Question<strong id="questionText">0/20</strong></div>
+        <div>Problem<strong id="problemText">Ready</strong></div>
+        <div>Score<strong id="scoreText">0</strong></div>
+        <div>Accuracy<strong id="accuracyText">100%</strong></div>
+        <div>Streak<strong id="streakText">0</strong></div>
+        <div>Best<strong id="bestText">0</strong></div>
+        <div>Speed<strong id="speedText">Cruise</strong></div>
+        <div>Time<strong id="timeText">0.0s</strong></div>
+      </div>
+    </section>
+
+    <div class="below-game">
+      <div>Move: <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd>. Touch/click the left, middle, or right third of the road to choose a lane.</div>
+      <div>Race the road. Beat the facts. Build the brain.</div>
+    </div>
+  </main>
+
+<script>
+(() => {
+  const TOTAL_QUESTIONS = 20;
+  const FACT_MIN = 1;
+  const FACT_MAX = 12;
+
+  // Speed settings are intentionally simple so a teacher can ask AI to edit them later.
+  const SPEED_SETTINGS = {
+    chill: { label: 'Chill', base: 1.75, min: 1.35, max: 2.45 },
+    cruise: { label: 'Cruise', base: 2.45, min: 1.55, max: 3.25 },
+    dash: { label: 'Dash', base: 3.25, min: 1.85, max: 4.05 },
+    turbo: { label: 'Turbo', base: 4.05, min: 2.1, max: 4.65 }
+  };
+  const ADAPTIVE_STEP = 0.22;
+
+  const correctMessages = [
+    'Smooth recall!',
+    'Nice fact!',
+    'Clean thinking!',
+    'Accuracy builds speed!',
+    'Turbo brain warming up!'
+  ];
+  const wrongMessages = [
+    'Slow down. Smooth is fast.',
+    'Accuracy first.',
+    'Lock that fact in.',
+    'Try the fact again soon.',
+    'Calm recall beats guessing.'
+  ];
+  const progressMessages = {
+    5: 'Engine warm-up complete. Keep it smooth.',
+    10: 'Halfway! Accuracy is building speed.',
+    15: 'Final stretch. Calm brain, quick facts.',
+    20: "Race complete. Let’s check your fact power."
+  };
+  const streakMessages = {
+    3: '3-streak! Smooth recall.',
+    5: '5-streak! Accuracy is turning into speed.',
+    10: '10-streak! Turbo brain online.'
+  };
+
+  const PALETTES = [
+    {
+      name: 'Eye Candy',
+      vars: {
+        '--bg': '#1E0925',
+        '--surface': '#2B0D34',
+        '--surface-2': '#3A104B',
+        '--text': '#F2EFF3',
+        '--text-muted': '#CDB8D7',
+        '--accent': '#E4A83C',
+        '--accent-2': '#5EB5F2',
+        '--good': '#7AF190',
+        '--bad': '#FB7156',
+        '--road': '#271B3E',
+        '--road-line': '#5EB5F2',
+        '--panel-glow': '#F665E1',
+        '--border': '#8B6298',
+        '--ink': '#0E0E0F',
+        '--button-text': '#1E0925'
+      }
+    },
+    {
+      name: 'Neon Skyline',
+      vars: {
+        '--bg': '#1E2230',
+        '--surface': '#272C3D',
+        '--surface-2': '#343B57',
+        '--text': '#ECEEFF',
+        '--text-muted': '#B7C1FF',
+        '--accent': '#F2C94C',
+        '--accent-2': '#00E5FF',
+        '--good': '#78F7C8',
+        '--bad': '#FF33A1',
+        '--road': '#212840',
+        '--road-line': '#7A8CFF',
+        '--panel-glow': '#00E5FF',
+        '--border': '#7A8CFF',
+        '--ink': '#0E111B',
+        '--button-text': '#1E2230'
+      }
+    },
+    {
+      name: 'Cinder Saffron',
+      vars: {
+        '--bg': '#07111D',
+        '--surface': '#182432',
+        '--surface-2': '#39444D',
+        '--text': '#E5E5DF',
+        '--text-muted': '#B9BDB7',
+        '--accent': '#DB9941',
+        '--accent-2': '#7FB7D9',
+        '--good': '#91D49B',
+        '--bad': '#AE2C11',
+        '--road': '#202C38',
+        '--road-line': '#DB9941',
+        '--panel-glow': '#DB9941',
+        '--border': '#5D5D5D',
+        '--ink': '#050B12',
+        '--button-text': '#07111D'
+      }
+    }
+  ];
+
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  const playerY = H - 88;
+  const topY = 96;
+  const bottomY = H;
+  const topRoadWidth = 330;
+  const bottomRoadWidth = 910;
+
+  const tableSelect = document.getElementById('tableSelect');
+  const speedSelect = document.getElementById('speedSelect');
+  const adaptiveToggle = document.getElementById('adaptiveToggle');
+  const startOverlay = document.getElementById('startOverlay');
+  const endOverlay = document.getElementById('endOverlay');
+
+  const hud = {
+    question: document.getElementById('questionText'),
+    problem: document.getElementById('problemText'),
+    score: document.getElementById('scoreText'),
+    accuracy: document.getElementById('accuracyText'),
+    streak: document.getElementById('streakText'),
+    best: document.getElementById('bestText'),
+    speed: document.getElementById('speedText'),
+    time: document.getElementById('timeText')
+  };
+
+  let state = createIdleState();
+  let paletteIndex = 0;
+
+  function createIdleState() {
+    return {
+      status: 'start',
+      questions: [],
+      currentQuestionIndex: 0,
+      currentQuestion: null,
+      correctCount: 0,
+      wrongCount: 0,
+      score: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      missedFacts: [],
+      answeredFacts: [],
+      startTime: 0,
+      endTime: 0,
+      lane: 1,
+      gateY: -90,
+      roadOffset: 0,
+      options: [],
+      flash: null,
+      flashTimer: 0,
+      speed: SPEED_SETTINGS.cruise.base,
+      baseSpeed: SPEED_SETTINGS.cruise.base,
+      modeKey: 'cruise',
+      adaptive: true,
+      progressMessage: 'First we get it right. Then we get it fast.',
+      progressTimer: 240
+    };
+  }
+
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function applyPalette(palette) {
+    const root = document.documentElement;
+    Object.entries(palette.vars).forEach(([key, value]) => root.style.setProperty(key, value));
+    document.getElementById('pal-name').textContent = palette.name;
+  }
+
+  function nextPalette() {
+    paletteIndex = (paletteIndex + 1) % PALETTES.length;
+    applyPalette(PALETTES[paletteIndex]);
+  }
+
+  function shuffle(items) {
+    const copy = [...items];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function randomFrom(items) {
+    return items[Math.floor(Math.random() * items.length)];
+  }
+
+  function makeFact(a, b, repeated = false) {
+    return {
+      factorA: a,
+      factorB: b,
+      answer: a * b,
+      key: `${a}x${b}`,
+      repeated
+    };
+  }
+
+  // Question generation: 20 facts, focused table or balanced mixed mode.
+  function generateRaceQuestions(focusTable) {
+    if (focusTable !== 'mixed') {
+      const table = Number(focusTable);
+      const baseFacts = shuffle(Array.from({ length: FACT_MAX }, (_, i) => makeFact(table, i + 1)));
+      const questions = [...baseFacts];
+      while (questions.length < TOTAL_QUESTIONS) {
+        const next = randomFrom(baseFacts);
+        questions.push(makeFact(next.factorA, next.factorB, true));
+      }
+      return shuffle(questions).slice(0, TOTAL_QUESTIONS);
+    }
+
+    const easy = [];
+    const medium = [];
+    const hard = [];
+    for (let a = FACT_MIN; a <= FACT_MAX; a++) {
+      for (let b = FACT_MIN; b <= FACT_MAX; b++) {
+        const fact = makeFact(a, b);
+        if ([1, 2, 5, 10, 11].includes(a) || [1, 2, 5, 10, 11].includes(b)) easy.push(fact);
+        else if ([3, 4, 6].includes(a) || [3, 4, 6].includes(b)) medium.push(fact);
+        else hard.push(fact);
+      }
+    }
+
+    return shuffle([
+      ...shuffle(easy).slice(0, 6),
+      ...shuffle(medium).slice(0, 7),
+      ...shuffle(hard).slice(0, 7)
+    ]);
+  }
+
+  // Distractor generation: neighbouring facts, nearby multiples, and off-by-one table errors.
+  function makeGateOptions(fact) {
+    const candidates = new Set();
+    const a = fact.factorA;
+    const b = fact.factorB;
+    const correct = fact.answer;
+
+    [
+      [a, b - 1], [a, b + 1],
+      [a - 1, b], [a + 1, b],
+      [a - 1, b + 1], [a + 1, b - 1]
+    ].forEach(([x, y]) => {
+      if (x >= FACT_MIN && x <= FACT_MAX && y >= FACT_MIN && y <= FACT_MAX) candidates.add(x * y);
+    });
+
+    [a, -a, b, -b, 1, -1, 2, -2, a + b, -(a + b)].forEach(offset => {
+      candidates.add(correct + offset);
+    });
+
+    for (let n = FACT_MIN; n <= FACT_MAX; n++) {
+      candidates.add(a * n);
+      candidates.add(b * n);
+    }
+
+    const usable = [...candidates]
+      .filter(value => Number.isInteger(value) && value > 0 && value !== correct)
+      .sort((left, right) => Math.abs(left - correct) - Math.abs(right - correct));
+
+    const options = [correct];
+    for (const value of shuffle(usable.slice(0, 10))) {
+      if (options.length >= 3) break;
+      if (!options.includes(value)) options.push(value);
+    }
+
+    let fallback = 1;
+    while (options.length < 3) {
+      if (fallback !== correct && !options.includes(fallback)) options.push(fallback);
+      fallback++;
+    }
+
+    return shuffle(options);
+  }
+
+  function startRace() {
+    const mode = speedSelect.value;
+    const speed = SPEED_SETTINGS[mode];
+    state = {
+      ...createIdleState(),
+      status: 'running',
+      questions: generateRaceQuestions(tableSelect.value),
+      startTime: performance.now(),
+      speed: speed.base,
+      baseSpeed: speed.base,
+      modeKey: mode,
+      adaptive: adaptiveToggle.checked
+    };
+    setCurrentQuestion();
+    startOverlay.hidden = true;
+    endOverlay.hidden = true;
+    updateHud();
+  }
+
+  function restartRace() {
+    startRace();
+  }
+
+  function showStartScreen() {
+    state.status = 'start';
+    state.flash = null;
+    startOverlay.hidden = false;
+    endOverlay.hidden = true;
+    updateHud();
+  }
+
+  function setCurrentQuestion() {
+    state.currentQuestion = state.questions[state.currentQuestionIndex];
+    state.options = makeGateOptions(state.currentQuestion);
+    state.gateY = -105;
+    state.lane = 1;
+  }
+
+  function answeredCount() {
+    return state.correctCount + state.wrongCount;
+  }
+
+  function accuracyPercent() {
+    const total = answeredCount();
+    return total === 0 ? 100 : Math.round((state.correctCount / total) * 100);
+  }
+
+  // Missed facts are placed back into a later slot when there is room in the same 20-question race.
+  function scheduleMissedFact(fact) {
+    const start = state.currentQuestionIndex + 2;
+    const end = state.questions.length - 1;
+    if (start > end) return;
+    const possible = [];
+    for (let i = start; i <= end; i++) {
+      if (state.questions[i].key !== fact.key) possible.push(i);
+    }
+    if (!possible.length) return;
+    const slot = randomFrom(possible);
+    state.questions[slot] = makeFact(fact.factorA, fact.factorB, true);
+  }
+
+  // Scoring: accuracy is primary; correct answers receive base points plus a modest streak bonus.
+  function scoreCorrectAnswer() {
+    state.currentStreak++;
+    state.bestStreak = Math.max(state.bestStreak, state.currentStreak);
+    state.correctCount++;
+    state.score += 100 + state.currentStreak * 10;
+  }
+
+  function chooseCurrentLane() {
+    if (state.status !== 'running' || !state.currentQuestion) return;
+
+    const fact = state.currentQuestion;
+    const selected = state.options[state.lane];
+    const correct = selected === fact.answer;
+
+    if (correct) {
+      scoreCorrectAnswer();
+      let message = randomFrom(correctMessages);
+      if (streakMessages[state.currentStreak]) message = streakMessages[state.currentStreak];
+      state.flash = {
+        type: 'good',
+        text: `Correct: ${fact.factorA} × ${fact.factorB} = ${fact.answer}`,
+        subtext: message
+      };
+      state.flashTimer = 96;
+
+      if (state.adaptive && state.currentStreak > 0 && state.currentStreak % 3 === 0) {
+        const bounds = SPEED_SETTINGS[state.modeKey];
+        state.speed = clamp(state.speed + ADAPTIVE_STEP, bounds.min, bounds.max);
+      }
+    } else {
+      state.wrongCount++;
+      state.currentStreak = 0;
+      state.missedFacts.push(fact);
+      scheduleMissedFact(fact);
+      state.flash = {
+        type: 'bad',
+        text: `Careful: ${fact.factorA} × ${fact.factorB} = ${fact.answer}`,
+        subtext: randomFrom(wrongMessages)
+      };
+      state.flashTimer = 126;
+
+      if (state.adaptive) {
+        const bounds = SPEED_SETTINGS[state.modeKey];
+        state.speed = clamp(state.speed - ADAPTIVE_STEP, bounds.min, bounds.max);
+      }
+    }
+
+    state.answeredFacts.push({ ...fact, correct, selected });
+    state.currentQuestionIndex++;
+
+    if (progressMessages[state.currentQuestionIndex]) {
+      state.progressMessage = progressMessages[state.currentQuestionIndex];
+      state.progressTimer = 210;
+    }
+
+    if (state.currentQuestionIndex >= TOTAL_QUESTIONS) {
+      finishRace();
+    } else {
+      setCurrentQuestion();
+    }
+
+    updateHud();
+  }
+
+  // End screen: freezes the race and reports score, accuracy, timing, streaks, rating, and missed facts.
+  function finishRace() {
+    state.status = 'ended';
+    state.endTime = performance.now();
+    state.currentQuestion = null;
+    endOverlay.hidden = false;
+    renderEndScreen();
+  }
+
+  function totalTimeSeconds() {
+    const end = state.status === 'ended' ? state.endTime : performance.now();
+    return state.startTime ? (end - state.startTime) / 1000 : 0;
+  }
+
+  function averageSecondsPerQuestion() {
+    return totalTimeSeconds() / TOTAL_QUESTIONS;
+  }
+
+  function fluencyRating() {
+    const accuracy = accuracyPercent();
+    const average = averageSecondsPerQuestion();
+    if (accuracy >= 95 && average < 3) return 'Master';
+    if (accuracy >= 90) return 'Gold';
+    if (accuracy >= 75) return 'Silver';
+    return 'Bronze';
+  }
+
+  function ratingCopy(rating) {
+    if (rating === 'Master') return ['MASTER RUN!', 'You were fast because you were accurate.', 'Fast facts last.'];
+    if (rating === 'Gold') return ['GOLD RUN!', 'Strong recall. Keep sharpening your facts.'];
+    if (rating === 'Silver') return ['SILVER RUN!', 'Good effort. Practise the missed facts and race again.'];
+    return ['BRONZE RUN!', 'Slow down first. Accuracy builds speed.', 'Smooth is fast.'];
+  }
+
+  function uniqueMissedFacts() {
+    const map = new Map();
+    state.missedFacts.forEach(fact => map.set(fact.key, fact));
+    return [...map.values()];
+  }
+
+  function renderEndScreen() {
+    const rating = fluencyRating();
+    const copy = ratingCopy(rating);
+    document.getElementById('ratingTitle').textContent = copy[0];
+    document.getElementById('ratingMessage').innerHTML = copy.slice(1).map(line => `<span>${line}</span>`).join('');
+    document.getElementById('finalScore').textContent = state.score;
+    document.getElementById('finalCorrect').textContent = `${state.correctCount} / ${TOTAL_QUESTIONS}`;
+    document.getElementById('finalAccuracy').textContent = `${accuracyPercent()}%`;
+    document.getElementById('finalTime').textContent = `${totalTimeSeconds().toFixed(1)}s`;
+    document.getElementById('finalAverage').textContent = `${averageSecondsPerQuestion().toFixed(1)}s`;
+    document.getElementById('finalBestStreak').textContent = state.bestStreak;
+
+    const missed = uniqueMissedFacts();
+    const list = document.getElementById('missedFacts');
+    const heading = document.getElementById('missedHeading');
+    list.innerHTML = '';
+    if (missed.length) {
+      heading.textContent = 'Facts to practise:';
+      missed.forEach(fact => {
+        const item = document.createElement('li');
+        item.textContent = `${fact.factorA} × ${fact.factorB} = ${fact.answer}`;
+        list.appendChild(item);
+      });
+    } else {
+      heading.textContent = 'Perfect accuracy!';
+      const item = document.createElement('li');
+      item.textContent = 'Now try a faster road.';
+      list.appendChild(item);
+    }
+  }
+
+  function updateHud() {
+    const currentNumber = state.status === 'running'
+      ? Math.min(state.currentQuestionIndex + 1, TOTAL_QUESTIONS)
+      : answeredCount();
+    hud.question.textContent = `${currentNumber}/${TOTAL_QUESTIONS}`;
+    hud.problem.textContent = state.currentQuestion
+      ? `${state.currentQuestion.factorA} × ${state.currentQuestion.factorB}`
+      : state.status === 'start'
+        ? 'Ready'
+        : 'Complete';
+    hud.score.textContent = state.score;
+    hud.accuracy.textContent = `${accuracyPercent()}%`;
+    hud.streak.textContent = state.currentStreak;
+    hud.best.textContent = state.bestStreak;
+    hud.speed.textContent = `${SPEED_SETTINGS[state.modeKey].label} ${state.adaptive ? 'Adaptive' : ''}`.trim();
+    hud.time.textContent = `${totalTimeSeconds().toFixed(1)}s`;
+  }
+
+  function laneXAtY(lane, y) {
+    const t = clamp((y - topY) / (bottomY - topY), 0, 1);
+    const width = topRoadWidth + (bottomRoadWidth - topRoadWidth) * t;
+    return W / 2 - width / 2 + width * (lane + 0.5) / 3;
+  }
+
+  function roundRect(x, y, w, h, r, fill = true, stroke = false) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+
+  function wrapText(text, x, y, maxWidth, lineHeight) {
+    const words = String(text).split(' ');
+    let line = '';
+    const lines = [];
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    lines.push(line);
+    lines.forEach((content, index) => ctx.fillText(content, x, y + index * lineHeight));
+  }
+
+  function drawBackground() {
+    const gradient = ctx.createLinearGradient(0, 0, 0, H);
+    gradient.addColorStop(0, cssVar('--surface-2'));
+    gradient.addColorStop(0.55, cssVar('--bg'));
+    gradient.addColorStop(1, cssVar('--ink'));
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.save();
+    ctx.globalAlpha = 0.42;
+    for (let i = 0; i < 145; i++) {
+      const x = (i * 83 + 17) % W;
+      const y = (i * 47 + Math.floor(state.roadOffset * 0.22)) % H;
+      ctx.fillStyle = i % 8 === 0 ? cssVar('--accent') : cssVar('--text');
+      ctx.fillRect(x, y, i % 9 === 0 ? 3 : 2, i % 9 === 0 ? 3 : 2);
+    }
+    ctx.restore();
+  }
+
+  function drawRoad() {
+    ctx.fillStyle = cssVar('--road');
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - topRoadWidth / 2, topY);
+    ctx.lineTo(W / 2 + topRoadWidth / 2, topY);
+    ctx.lineTo(W / 2 + bottomRoadWidth / 2, bottomY);
+    ctx.lineTo(W / 2 - bottomRoadWidth / 2, bottomY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = cssVar('--border');
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    for (let lane = 1; lane < 3; lane++) {
+      const xTop = W / 2 - topRoadWidth / 2 + topRoadWidth * lane / 3;
+      const xBottom = W / 2 - bottomRoadWidth / 2 + bottomRoadWidth * lane / 3;
+      ctx.strokeStyle = 'rgba(255,255,255,.20)';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([16, 18]);
+      ctx.beginPath();
+      ctx.moveTo(xTop, topY);
+      ctx.lineTo(xBottom, bottomY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    for (let y = (state.roadOffset % 62) + topY; y < H; y += 62) {
+      const t = clamp((y - topY) / (bottomY - topY), 0, 1);
+      const width = topRoadWidth + (bottomRoadWidth - topRoadWidth) * t;
+      ctx.strokeStyle = cssVar('--road-line');
+      ctx.globalAlpha = 0.28;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - width / 2, y);
+      ctx.lineTo(W / 2 + width / 2, y);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawGate() {
+    if (state.status !== 'running' || !state.currentQuestion) return;
+    const y = state.gateY;
+    const scale = clamp(y / H, 0, 1);
+    for (let lane = 0; lane < 3; lane++) {
+      const x = laneXAtY(lane, y);
+      const width = 156 + scale * 92;
+      const height = 58 + scale * 10;
+
+      ctx.save();
+      ctx.shadowColor = cssVar('--panel-glow');
+      ctx.shadowBlur = 16 + scale * 12;
+      ctx.fillStyle = cssVar('--accent');
+      ctx.strokeStyle = cssVar('--text');
+      ctx.lineWidth = 3;
+      roundRect(x - width / 2, y - height / 2, width, height, 8, true, true);
+      ctx.restore();
+
+      ctx.fillStyle = cssVar('--button-text');
+      ctx.font = `900 ${30 + scale * 10}px Verdana`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(state.options[lane], x, y + 2);
+    }
+  }
+
+  function drawPlayer() {
+    const x = laneXAtY(state.lane, playerY);
+    ctx.save();
+    ctx.translate(x, playerY);
+    ctx.shadowColor = cssVar('--accent-2');
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = cssVar('--accent-2');
+    ctx.beginPath();
+    ctx.moveTo(0, -34);
+    ctx.lineTo(44, 28);
+    ctx.lineTo(0, 15);
+    ctx.lineTo(-44, 28);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = cssVar('--text');
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = cssVar('--good');
+    ctx.beginPath();
+    ctx.ellipse(0, -5, 14, 24, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = cssVar('--accent');
+    ctx.beginPath();
+    ctx.moveTo(-24, 28);
+    ctx.lineTo(-12, 50);
+    ctx.lineTo(0, 28);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(24, 28);
+    ctx.lineTo(12, 50);
+    ctx.lineTo(0, 28);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawPrompt() {
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const problem = state.currentQuestion
+      ? `${state.currentQuestion.factorA} × ${state.currentQuestion.factorB} = ?`
+      : 'Jo⚡Go Turbo Tables';
+
+    ctx.fillStyle = 'rgba(0,0,0,.36)';
+    roundRect(W / 2 - 300, 20, 600, 64, 8, true, false);
+    ctx.fillStyle = cssVar('--text');
+    ctx.font = '900 34px Verdana';
+    wrapText(problem, W / 2, 54, 560, 38);
+  }
+
+  function drawStatus() {
+    ctx.fillStyle = 'rgba(0,0,0,.34)';
+    roundRect(18, 18, 254, 72, 8, true, false);
+    ctx.fillStyle = cssVar('--text-muted');
+    ctx.font = '900 15px Verdana';
+    ctx.textAlign = 'left';
+    ctx.fillText('ACCURACY b4 SPEED', 34, 44);
+    ctx.fillStyle = cssVar('--good');
+    ctx.font = '900 20px Verdana';
+    ctx.fillText('Slow → Smooth → Fast', 34, 71);
+
+    const progress = state.status === 'running' ? state.currentQuestionIndex / TOTAL_QUESTIONS : answeredCount() / TOTAL_QUESTIONS;
+    ctx.fillStyle = 'rgba(255,255,255,.14)';
+    roundRect(W - 282, 30, 248, 18, 8, true, false);
+    ctx.fillStyle = cssVar('--good');
+    roundRect(W - 282, 30, 248 * progress, 18, 8, true, false);
+    ctx.fillStyle = cssVar('--text');
+    ctx.font = '900 15px Verdana';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Race ${Math.min(state.currentQuestionIndex + 1, TOTAL_QUESTIONS)} of ${TOTAL_QUESTIONS}`, W - 34, 70);
+  }
+
+  function drawFlash() {
+    if (!state.flash || state.flashTimer <= 0) return;
+    const good = state.flash.type === 'good';
+    ctx.save();
+    ctx.fillStyle = good ? cssVar('--good') : cssVar('--bad');
+    ctx.globalAlpha = 0.95;
+    roundRect(88, H - 174, W - 176, 78, 8, true, false);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = good ? cssVar('--button-text') : cssVar('--text');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 24px Verdana';
+    wrapText(state.flash.text, W / 2, H - 146, W - 220, 28);
+    ctx.font = '900 18px Verdana';
+    wrapText(state.flash.subtext, W / 2, H - 114, W - 220, 22);
+    ctx.restore();
+  }
+
+  function drawProgressMessage() {
+    if (!state.progressMessage || state.progressTimer <= 0 || state.flashTimer > 0) return;
+    ctx.fillStyle = 'rgba(0,0,0,.46)';
+    roundRect(150, H - 162, W - 300, 52, 8, true, false);
+    ctx.fillStyle = cssVar('--text');
+    ctx.font = '900 19px Verdana';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    wrapText(state.progressMessage, W / 2, H - 135, W - 340, 24);
+  }
+
+  function drawIdleMessage() {
+    if (state.status === 'running') return;
+    ctx.fillStyle = 'rgba(0,0,0,.24)';
+    roundRect(242, 116, 516, 70, 8, true, false);
+    ctx.fillStyle = cssVar('--text');
+    ctx.font = '900 23px Verdana';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    wrapText('Race the road. Beat the facts. Build the brain.', W / 2, 153, 470, 28);
+  }
+
+  function drawFrame() {
+    drawBackground();
+    drawRoad();
+    drawGate();
+    drawPlayer();
+    drawPrompt();
+    drawStatus();
+    drawFlash();
+    drawProgressMessage();
+    drawIdleMessage();
+  }
+
+  function loop() {
+    drawFrame();
+
+    if (state.status === 'running') {
+      state.roadOffset += state.speed;
+      state.gateY += state.speed;
+      if (state.gateY > playerY + 10) chooseCurrentLane();
+      updateHud();
+    } else if (state.status === 'start') {
+      state.roadOffset += 1.05;
+    }
+
+    if (state.flashTimer > 0) state.flashTimer--;
+    if (state.progressTimer > 0) state.progressTimer--;
+    requestAnimationFrame(loop);
+  }
+
+  function moveLane(direction) {
+    if (state.status !== 'running') return;
+    state.lane = clamp(state.lane + direction, 0, 2);
+  }
+
+  document.addEventListener('keydown', event => {
+    if (['ArrowLeft', 'ArrowRight', ' ', 'Spacebar'].includes(event.key)) event.preventDefault();
+    if (event.key === 'ArrowLeft' || event.key === 'a' || event.key === 'A') moveLane(-1);
+    if (event.key === 'ArrowRight' || event.key === 'd' || event.key === 'D') moveLane(1);
+    if (event.key === 'Enter' && state.status !== 'running') startRace();
+  });
+
+  canvas.addEventListener('pointerdown', event => {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const third = rect.width / 3;
+    state.lane = x < third ? 0 : x < third * 2 ? 1 : 2;
+  });
+
+  speedSelect.addEventListener('change', () => {
+    const mode = speedSelect.value;
+    const speed = SPEED_SETTINGS[mode];
+    state.modeKey = mode;
+    state.baseSpeed = speed.base;
+    state.speed = speed.base;
+    updateHud();
+  });
+
+  adaptiveToggle.addEventListener('change', () => {
+    state.adaptive = adaptiveToggle.checked;
+    updateHud();
+  });
+
+  document.getElementById('startBtn').addEventListener('click', startRace);
+  document.getElementById('startBtnPanel').addEventListener('click', startRace);
+  document.getElementById('overlayStartBtn').addEventListener('click', startRace);
+  document.getElementById('overlayPracticeBtn').addEventListener('click', startRace);
+  document.getElementById('restartBtn').addEventListener('click', restartRace);
+  document.getElementById('raceAgainBtn').addEventListener('click', restartRace);
+  document.getElementById('changeTableBtn').addEventListener('click', showStartScreen);
+  document.getElementById('endChangeTableBtn').addEventListener('click', showStartScreen);
+  document.getElementById('pal-toggle').addEventListener('click', nextPalette);
+  document.getElementById('pal-toggle').addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      nextPalette();
+    }
+  });
+
+  window.TurboTablesDebug = {
+    generateRaceQuestions,
+    makeGateOptions,
+    SPEED_SETTINGS,
+    answerCurrentLane: chooseCurrentLane,
+    getState: () => state
+  };
+
+  applyPalette(PALETTES[0]);
+  updateHud();
+  loop();
+})();
+</script>
+</body>
+</html>
