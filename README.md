@@ -4,11 +4,17 @@ Single-file browser prototype for a Grade 4-7 multiplication fluency racing game
 
 ## Open The Game
 
-Open `JoGo_Turbo_Tables.html` in any browser.
+Open `index.html` in any browser.
+
+GitHub Pages URL, once Pages is enabled:
+
+`https://bajoseph01.github.io/JoGo-Turbo-Tables/`
 
 ## Project Contents
 
-- `JoGo_Turbo_Tables.html` - the playable game.
+- `index.html` - the playable game and GitHub Pages entrypoint.
+- `manifest.webmanifest` - iPad/Home Screen web-app metadata.
+- `assets/icons/` - local icons for Home Screen/PWA use.
 - `screenshots/` - desktop and mobile visual QA screenshots.
 
 ## Notes

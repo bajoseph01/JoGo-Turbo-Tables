@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jo⚡Go Turbo Tables</title>
+  <meta name="description" content="A calm multiplication fluency racing game for Grade 4-7 learners." />
+  <meta name="theme-color" content="#1E0925" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Turbo Tables" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-180.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
   <style>
     :root {
       --bg: #1E0925;
@@ -583,7 +591,7 @@
     </section>
 
     <div class="below-game">
-      <div>Move: <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd>. Lock in: <kbd>Space</kbd> or <kbd>Enter</kbd>. Pause: <kbd>P</kbd>.</div>
+      <div>iPad: tap an answer gate. Keyboard: move with <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd>, then lock in with <kbd>Space</kbd> or <kbd>Enter</kbd>.</div>
       <div>You control the road. Accuracy first.</div>
     </div>
   </main>
@@ -1267,7 +1275,7 @@
       ctx.font = '900 18px Verdana';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('Move lanes, then lock your answer when ready.', W / 2, y + 70);
+      ctx.fillText('Tap a gate, or move lanes and lock when ready.', W / 2, y + 70);
     }
   }
 
